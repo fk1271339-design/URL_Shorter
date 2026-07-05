@@ -15,6 +15,9 @@ public class UrlResponse {
     private String shortCode;
     private int clickCount;
     private boolean active;
-    private boolean  favourite;
+    private boolean favourite;
+    private String category;
+    private boolean passwordProtected;
+    private LocalDateTime expiryDate;
     private LocalDateTime createdAt;
 }

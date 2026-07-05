@@ -31,4 +31,10 @@ public class Url {
     private LocalDateTime createdAt;
 
     private boolean favourite;
+
+    private String category;
+
+    private String password;
+
+    private LocalDateTime expiryDate;
 }

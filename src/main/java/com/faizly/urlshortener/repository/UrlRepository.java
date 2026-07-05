@@ -12,6 +12,8 @@ public interface UrlRepository extends JpaRepository<Url, Long> {
 
     List<Url> findByFavouriteTrue();
 
+    List<Url> findByCategoryIgnoreCase(String category);
+
     boolean existsByShortCode(String shortCode);
 
     List<Url> findByOriginalUrlContainingIgnoreCase(String keyword);

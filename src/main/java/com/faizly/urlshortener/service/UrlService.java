@@ -27,6 +27,9 @@ public class UrlService {
                 .clickCount(0)
                 .active(true)
                 .favourite(false)
+                .category(request.getCategory())
+                .password(request.getPassword())
+                .expiryDate(request.getExpiryDate())
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -69,6 +72,9 @@ public class UrlService {
                 url.getClickCount(),
                 url.isActive(),
                 url.isFavourite(),
+                url.getCategory(),
+                url.getPassword() != null && !url.getPassword().isBlank(),
+                url.getExpiryDate(),
                 url.getCreatedAt()
         );
 
@@ -78,6 +84,9 @@ public class UrlService {
                 .orElseThrow(() -> new RuntimeException("URL not found"));
 
         url.setOriginalUrl(request.getOriginalUrl());
+        url.setCategory(request.getCategory());
+        url.setPassword(request.getPassword());
+        url.setExpiryDate(request.getExpiryDate());
 
         Url savedUrl = urlRepository.save(url);
 
@@ -89,6 +98,14 @@ public class UrlService {
 
         if (!url.isActive()) {
             throw new RuntimeException("This link is disabled");
+        }
+
+        if (url.getExpiryDate() != null && url.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("This link has expired");
+        }
+
+        if (url.getPassword() != null && !url.getPassword().isBlank()) {
+            throw new RuntimeException("This link is password protected");
         }
 
         url.setClickCount(url.getClickCount() + 1);
@@ -136,5 +153,38 @@ public class UrlService {
                 .stream()
                 .map(this::mapToUrlResponse)
                 .toList();
+    }
+
+    public List<UrlResponse> getUrlsByCategory(String category) {
+        return urlRepository.findByCategoryIgnoreCase(category)
+                .stream()
+                .map(this::mapToUrlResponse)
+                .toList();
+    }
+
+    public String getOriginalUrlWithPassword(String shortCode, String password) {
+        Url url = urlRepository.findByShortCode(shortCode)
+                .orElseThrow(() -> new RuntimeException("Short URL not found"));
+
+        if (!url.isActive()) {
+            throw new RuntimeException("This link is disabled");
+        }
+
+        if (url.getExpiryDate() != null && url.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("This link has expired");
+        }
+
+        if (url.getPassword() == null || url.getPassword().isBlank()) {
+            return getOriginalUrl(shortCode);
+        }
+
+        if (!url.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        url.setClickCount(url.getClickCount() + 1);
+        urlRepository.save(url);
+
+        return url.getOriginalUrl();
     }
 }

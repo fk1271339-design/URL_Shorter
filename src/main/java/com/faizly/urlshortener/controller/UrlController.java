@@ -53,4 +53,9 @@ public class UrlController {
     public List<UrlResponse> getFavouriteUrls() {
         return urlService.getFavouriteUrls();
     }
+
+    @GetMapping("/category")
+    public List<UrlResponse> getUrlsByCategory(@RequestParam String name) {
+        return urlService.getUrlsByCategory(name);
+    }
 }
